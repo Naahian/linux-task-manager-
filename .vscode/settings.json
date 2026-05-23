@@ -1,0 +1,32 @@
+{
+    "files.exclude": {
+        "**/flutter/ephemeral": true,
+        "**/Flutter/ephemeral": true,
+        "**/.symlinks": true,
+        "**/.plugin_symlinks": true,
+        "build/**": true,
+        ".idea/**": true,
+        ".dart_tool": true,
+        ".vscode": true,
+        "android": true,
+        "ios": true,
+        "linux": true,
+        "macos": true,
+        "test": true,
+        "web": true,
+        "windows": true,
+        ".flutter-plugins-dependencies": true,
+        ".gitignore": true,
+        ".hidden-items.json": true,
+        ".metadata": true,
+        "analysis_options.yaml": true,
+        "devtools_options.yaml": true,
+        "pubspec.lock": true,
+        "README.md": true,
+        "task_manager.iml": true
+    },
+    "invisifolder.hiddenFolders": [
+        "build",
+        ".idea"
+    ]
+}
