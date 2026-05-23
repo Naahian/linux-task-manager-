@@ -222,12 +222,12 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
 
   Widget _buildMainContent(BuildContext context, TaskController controller) {
     if (_selectedGroupId == null) {
-      return const Center(child: Text('Select a group'));
+      return const Center(child: SelectableText('Select a group'));
     }
 
     final group = controller.getTaskGroupById(_selectedGroupId!);
     if (group == null) {
-      return const Center(child: Text('Group not found'));
+      return const Center(child: SelectableText('Group not found'));
     }
 
     return Container(
@@ -243,7 +243,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    SelectableText(
                       group.name,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
@@ -263,7 +263,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
+                        SelectableText(
                           '${group.taskIds.length} tasks',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: Colors.grey.shade500),
@@ -466,7 +466,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
                                       color: Colors.grey.shade300,
                                     ),
                                     const SizedBox(height: 12),
-                                    Text(
+                                    SelectableText(
                                       'No tasks',
                                       style: Theme.of(context)
                                           .textTheme
@@ -643,9 +643,9 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
                         task.title,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     PopupMenuButton(
@@ -726,7 +726,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
                         color: Colors.grey.shade500,
                       ),
                       const SizedBox(width: 4),
-                      Text(
+                      SelectableText(
                         '${task.completedTodosCount}/${task.todos.length}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey.shade500,
@@ -775,7 +775,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
                   if (task.todos.length > 2)
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
-                      child: Text(
+                      child: SelectableText(
                         '+${task.todos.length - 2} more',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey.shade500,
@@ -799,7 +799,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('New Task Group'),
+        title: const SelectableText('New Task Group'),
         content: TextField(
           controller: textController,
           decoration: InputDecoration(
@@ -840,7 +840,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Edit Task Group'),
+        title: const SelectableText('Edit Task Group'),
         content: TextField(
           controller: textController,
           decoration: InputDecoration(
@@ -875,7 +875,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('New Task'),
+        title: const SelectableText('New Task'),
         content: TextField(
           controller: textController,
           decoration: InputDecoration(
@@ -896,7 +896,7 @@ class _TaskManagerHomeState extends State<TaskManagerHome> {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Create'),
+            child: const SelectableText('Create'),
           ),
         ],
       ),
@@ -966,7 +966,7 @@ class _TaskDetailsDialogState extends State<TaskDetailsDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
+                  child: SelectableText(
                     widget.task.title,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
@@ -1008,7 +1008,7 @@ class _TaskDetailsDialogState extends State<TaskDetailsDialog> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        Text(
+                        SelectableText(
                           'Progress',
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.w600),
@@ -1028,7 +1028,7 @@ class _TaskDetailsDialogState extends State<TaskDetailsDialog> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    SelectableText(
                       '${widget.task.completedTodosCount}/${widget.task.todos.length} completed',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.grey.shade600,
@@ -1051,7 +1051,7 @@ class _TaskDetailsDialogState extends State<TaskDetailsDialog> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
+                      SelectableText(
                         'Todo Items',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
@@ -1071,7 +1071,7 @@ class _TaskDetailsDialogState extends State<TaskDetailsDialog> {
                             color: Colors.grey.shade300,
                           ),
                           const SizedBox(height: 12),
-                          Text(
+                          SelectableText(
                             'No todos yet',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: Colors.grey.shade500),
@@ -1109,7 +1109,7 @@ class _TaskDetailsDialogState extends State<TaskDetailsDialog> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                               ),
-                              title: Text(
+                              title: SelectableText(
                                 todo.title,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
