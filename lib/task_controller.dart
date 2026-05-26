@@ -8,12 +8,14 @@ class TaskController extends ChangeNotifier {
   late SharedPreferences _prefs;
   List<TaskGroup> _taskGroups = [];
   List<Task> _tasks = [];
+  String? _selectedGroupId;
 
   bool _isLoading = true;
 
   // Getters
   List<TaskGroup> get taskGroups => _taskGroups;
   List<Task> get tasks => _tasks;
+  String? get selectedGroupId => _selectedGroupId;
   bool get isLoading => _isLoading;
 
   // Storage keys
@@ -34,18 +36,81 @@ class TaskController extends ChangeNotifier {
     }
   }
 
+  // Save data to SharedPreferences
+  Future<void> _saveData() async {
+    try {
+      // Save task groups (without notes - they're saved separately)
+      final groupsJson = _taskGroups.map((g) {
+        debugPrint('Saving group ${g.name} (notes saved separately)');
+        return jsonEncode(g.toJson());
+      }).toList();
+      await _prefs.setStringList(_taskGroupsKey, groupsJson);
+
+      // Save notes separately for each group to avoid size limits
+      for (var group in _taskGroups) {
+        if (group.notes != null && group.notes!.isNotEmpty) {
+          final notesKey = 'group_notes_${group.id}';
+          await _prefs.setString(notesKey, group.notes!);
+          debugPrint(
+            'Saved notes for group ${group.name} (${group.notes!.length} bytes)',
+          );
+        }
+      }
+
+      final tasksJson = _tasks.map((t) => jsonEncode(t.toJson())).toList();
+      await _prefs.setStringList(_tasksKey, tasksJson);
+
+      debugPrint('Data saved successfully');
+    } catch (e) {
+      debugPrint('Error saving data: $e');
+    }
+  }
+
   // Load data from SharedPreferences
   Future<void> _loadData() async {
     try {
+      debugPrint('=== LOADING DATA ===');
+
       // Load task groups
       final groupsJson = _prefs.getStringList(_taskGroupsKey) ?? [];
+      debugPrint('Raw groups JSON count: ${groupsJson.length}');
+
       _taskGroups = groupsJson
           .map((json) => TaskGroup.fromJson(jsonDecode(json)))
           .toList();
 
+      // Load notes separately for each group
+      for (var group in _taskGroups) {
+        final notesKey = 'group_notes_${group.id}';
+        final savedNotes = _prefs.getString(notesKey);
+        if (savedNotes != null) {
+          group.notes = savedNotes;
+          debugPrint(
+            'Loaded notes for group ${group.name} (${savedNotes.length} bytes)',
+          );
+        }
+      }
+
+      debugPrint('Loaded ${_taskGroups.length} task groups');
+      for (var group in _taskGroups) {
+        debugPrint(
+          'Group: ${group.name}, Notes length: ${group.notes?.length ?? 0}',
+        );
+        if (group.notes != null && group.notes!.isNotEmpty) {
+          debugPrint(
+            '  Notes (first 100 chars): ${group.notes!.substring(0, group.notes!.length > 100 ? 100 : group.notes!.length)}',
+          );
+        }
+      }
+
       // Load tasks
       final tasksJson = _prefs.getStringList(_tasksKey) ?? [];
-      _tasks = tasksJson.map((json) => Task.fromJson(jsonDecode(json))).toList();
+      _tasks = tasksJson
+          .map((json) => Task.fromJson(jsonDecode(json)))
+          .toList();
+
+      debugPrint('Loaded ${_tasks.length} tasks');
+      debugPrint('=== DATA LOADING COMPLETE ===');
 
       // Create default group if none exists
       if (_taskGroups.isEmpty) {
@@ -53,24 +118,13 @@ class TaskController extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error loading data: $e');
+      debugPrint(e.toString());
     }
   }
 
-  // Save data to SharedPreferences
-  Future<void> _saveData() async {
-    try {
-      final groupsJson =
-          _taskGroups.map((g) => jsonEncode(g.toJson())).toList();
-      await _prefs.setStringList(_taskGroupsKey, groupsJson);
+  // GROUP Operations
+  // ===========================================================
 
-      final tasksJson = _tasks.map((t) => jsonEncode(t.toJson())).toList();
-      await _prefs.setStringList(_tasksKey, tasksJson);
-    } catch (e) {
-      debugPrint('Error saving data: $e');
-    }
-  }
-
-  // Task Group Operations
   Future<void> createTaskGroup(String name) async {
     const uuid = Uuid();
     final group = TaskGroup(
@@ -97,11 +151,62 @@ class TaskController extends ChangeNotifier {
     // Delete all tasks in this group
     _tasks.removeWhere((task) => task.groupId == groupId);
     _taskGroups.removeWhere((g) => g.id == groupId);
+
+    // Delete notes for this group
+    final notesKey = 'group_notes_$groupId';
+    await _prefs.remove(notesKey);
+
     await _saveData();
     notifyListeners();
   }
 
-  // Task Operations
+  void updateGroupSelection(String? groupId) {
+    _selectedGroupId = groupId;
+    notifyListeners();
+  }
+
+  // NOTE Operations
+  // ===========================================================
+
+  Future<void> updateGroupNotes(String groupId, String notesDelta) async {
+    final index = _taskGroups.indexWhere((g) => g.id == groupId);
+    if (index != -1) {
+      debugPrint('=== UPDATING NOTES ===');
+      debugPrint('Group ID: $groupId');
+      debugPrint('Notes Delta Length: ${notesDelta.length}');
+      debugPrint(
+        'Notes Content (first 100 chars): ${notesDelta.substring(0, notesDelta.length > 100 ? 100 : notesDelta.length)}',
+      );
+
+      _taskGroups[index] = _taskGroups[index].copyWith(notes: notesDelta);
+
+      debugPrint('Updated in memory, now saving...');
+      await _saveData();
+      debugPrint('Save completed, notifying listeners...');
+      notifyListeners();
+      debugPrint('=== NOTES UPDATE COMPLETE ===');
+    } else {
+      debugPrint('Group $groupId not found!');
+    }
+  }
+
+  String? getGroupNotes(String groupId) {
+    final group = getTaskGroupById(groupId);
+    debugPrint('=== RETRIEVING NOTES ===');
+    debugPrint('Group ID: $groupId');
+    debugPrint('Notes exists: ${group?.notes != null}');
+    debugPrint('Notes length: ${group?.notes?.length ?? 0}');
+    if (group?.notes != null) {
+      debugPrint(
+        'Notes (first 100 chars): ${group!.notes!.substring(0, group.notes!.length > 100 ? 100 : group.notes!.length)}',
+      );
+    }
+    return group?.notes;
+  }
+
+  // TASK Operations
+  // ===========================================================
+
   Future<void> createTask(String groupId, String title) async {
     const uuid = Uuid();
     final task = Task(
@@ -135,7 +240,7 @@ class TaskController extends ChangeNotifier {
 
   Future<void> deleteTask(String taskId) async {
     final task = _tasks.firstWhere((t) => t.id == taskId);
-    
+
     // Remove from group
     final groupIndex = _taskGroups.indexWhere((g) => g.id == task.groupId);
     if (groupIndex != -1) {
@@ -176,12 +281,14 @@ class TaskController extends ChangeNotifier {
   Future<void> toggleTodoCompletion(String taskId, String todoId) async {
     final taskIndex = _tasks.indexWhere((t) => t.id == taskId);
     if (taskIndex != -1) {
-      final todoIndex =
-          _tasks[taskIndex].todos.indexWhere((todo) => todo.id == todoId);
+      final todoIndex = _tasks[taskIndex].todos.indexWhere(
+        (todo) => todo.id == todoId,
+      );
       if (todoIndex != -1) {
         final todo = _tasks[taskIndex].todos[todoIndex];
-        _tasks[taskIndex].todos[todoIndex] =
-            todo.copyWith(isCompleted: !todo.isCompleted);
+        _tasks[taskIndex].todos[todoIndex] = todo.copyWith(
+          isCompleted: !todo.isCompleted,
+        );
         await _saveData();
         notifyListeners();
       }
@@ -198,11 +305,15 @@ class TaskController extends ChangeNotifier {
   }
 
   Future<void> updateTodoTitle(
-      String taskId, String todoId, String newTitle) async {
+    String taskId,
+    String todoId,
+    String newTitle,
+  ) async {
     final taskIndex = _tasks.indexWhere((t) => t.id == taskId);
     if (taskIndex != -1) {
-      final todoIndex =
-          _tasks[taskIndex].todos.indexWhere((todo) => todo.id == todoId);
+      final todoIndex = _tasks[taskIndex].todos.indexWhere(
+        (todo) => todo.id == todoId,
+      );
       if (todoIndex != -1) {
         final todo = _tasks[taskIndex].todos[todoIndex];
         _tasks[taskIndex].todos[todoIndex] = todo.copyWith(title: newTitle);

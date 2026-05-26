@@ -46,6 +46,10 @@ dependencies:
   
   # JSON serialization
   json_serializable: ^6.8.0
+  flutter_markdown: ^0.6.18
+  markdown: ^7.1.1
+  flutter_quill: ^11.5.1
+  quill_html_editor: ^2.2.8
 
 
 dev_dependencies:

@@ -126,12 +126,14 @@ class TaskGroup {
   String name;
   DateTime createdAt;
   List<String> taskIds;
+  String? notes;
 
   TaskGroup({
     required this.id,
     required this.name,
     required this.createdAt,
     required this.taskIds,
+    this.notes,
   });
 
   factory TaskGroup.fromJson(Map<String, dynamic> json) {
@@ -140,6 +142,7 @@ class TaskGroup {
       name: json['name'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       taskIds: List<String>.from(json['taskIds'] as List),
+      notes: json['notes'] as String?,
     );
   }
 
@@ -149,6 +152,7 @@ class TaskGroup {
       'name': name,
       'createdAt': createdAt.toIso8601String(),
       'taskIds': taskIds,
+      'notes': notes,
     };
   }
 
@@ -157,12 +161,14 @@ class TaskGroup {
     String? name,
     DateTime? createdAt,
     List<String>? taskIds,
+    String? notes,
   }) {
     return TaskGroup(
       id: id ?? this.id,
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
       taskIds: taskIds ?? this.taskIds,
+      notes: notes ?? this.notes,
     );
   }
 }

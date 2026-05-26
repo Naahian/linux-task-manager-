@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
 import 'package:task_manager/task_controller.dart';
 import 'package:task_manager/task_view.dart';
@@ -27,6 +28,7 @@ class TaskManagerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Task Manager',
+      localizationsDelegates: [FlutterQuillLocalizations.delegate],
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
