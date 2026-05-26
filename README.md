@@ -1,6 +1,6 @@
 # task_manager
 
-Offline Notion alternative for linux. Vibe coded app for personal use.
+Offline Notion alternative for linux. Mostly Vibe-coded for personal use.
 
 ## Getting Started
 
